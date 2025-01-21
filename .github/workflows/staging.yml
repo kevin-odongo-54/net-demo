@@ -1,0 +1,50 @@
+name: CI-CD | Deploy Backend Staging Branch
+
+on:
+  push:
+    branches: ['staging']
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: staging
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0' 
+
+      - name: Restore .NET dependencies
+        run: dotnet restore
+
+      - name: Build and publish .NET application
+        run: dotnet publish -c Release -o ./out
+
+      # - name: Login to Azure Container Registry (ACR)
+      #   uses: azure/docker-login@v1
+      #   with:
+      #     login-server: ${{ env.AZURE_ACR_LOGIN_SERVER }}
+      #     username: ${{ secrets.AZURE_CLIENT_ID }}
+      #     password: ${{ secrets.AZURE_CLIENT_SECRET }}
+
+      - name: Build, tag, and push image to ACR
+        id: build-image
+        env:
+          ACR_LOGIN_SERVER: ${{ env.AZURE_ACR_LOGIN_SERVER }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          # Copy the published .NET app into the Docker context
+          cp -r ./out ./app
+
+          # Build the Docker image and push to ACR
+          docker build --platform linux/amd64 -t $ACR_LOGIN_SERVER/$ACR_REPOSITORY:$IMAGE_TAG .
+          # docker push $ACR_LOGIN_SERVER/$ACR_REPOSITORY:$IMAGE_TAG
+          echo "image=$ACR_LOGIN_SERVER/$ACR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
