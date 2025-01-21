@@ -26,4 +26,6 @@ app.MapGet("/health", () => Results.Ok(new { Status = "Healthy" }));
 
 app.MapGet("/test", () => Results.Ok(new { Message = "This is a test endpoint." }));
 
+app.MapGet("/test_1", () => Results.Ok(new { Message = "This is a test 1 endpoint." }));
+
 app.Run();
