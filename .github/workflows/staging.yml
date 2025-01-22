@@ -4,6 +4,9 @@ on:
   push:
     branches: ['staging']
 
+env:
+  IMAGE_TAG: ${{ github.sha }}
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -35,16 +38,13 @@ jobs:
       #     username: ${{ secrets.AZURE_CLIENT_ID }}
       #     password: ${{ secrets.AZURE_CLIENT_SECRET }}
 
-      - name: Build, tag, and push image to ACR
-        id: build-image
-        env:
-          ACR_LOGIN_SERVER: ${{ env.AZURE_ACR_LOGIN_SERVER }}
-          IMAGE_TAG: ${{ github.sha }}
-        run: |
-          # Copy the published .NET app into the Docker context
-          cp -r ./out ./app
+      # - name: Build, tag, and push image to ACR
+      #   id: build-image
+      #   run: |
+      #     # Copy the published .NET app into the Docker context
+      #     cp -r ./out ./app
 
-          # Build the Docker image and push to ACR
-          docker build --platform linux/amd64 -t $ACR_LOGIN_SERVER/$ACR_REPOSITORY:$IMAGE_TAG .
-          # docker push $ACR_LOGIN_SERVER/$ACR_REPOSITORY:$IMAGE_TAG
-          echo "image=$ACR_LOGIN_SERVER/$ACR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+      #     # Build the Docker image and push to ACR
+      #     docker build --platform linux/amd64 -t $ACR_LOGIN_SERVER/$ACR_REPOSITORY:$IMAGE_TAG .
+      #     # docker push $ACR_LOGIN_SERVER/$ACR_REPOSITORY:$IMAGE_TAG
+      #     echo "image=$ACR_LOGIN_SERVER/$ACR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
